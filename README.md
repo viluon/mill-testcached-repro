@@ -1,3 +1,6 @@
+> [!WARNING]
+> Beware AI slop: this was authored by GitHub Copilot CLI (Claude Opus 4.6 model).
+
 # Mill `testCached` Flaky Sandbox-Escape Bug
 
 ## Summary
