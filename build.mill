@@ -1,0 +1,37 @@
+//| mill-version: 1.1.3
+
+// MRE: testCached flaky sandbox-escape error
+//
+// When running multiple testCached tasks in parallel, the filesystem sandbox
+// checker sporadically attributes writes from one task's fork.async worker
+// to another task's ExecutionChecker, causing spurious failures:
+//
+//   Writing to out/foo/test/testCached.dest/worker-0/claim not allowed
+//   during execution of `bar.test.testCached`.
+//
+// Key requirement: each test module must have multiple test CLASSES (not just
+// multiple test methods) so that fork.async is used for parallel test workers.
+// fork.async is only triggered when filteredClassCount > 1.
+//
+// To reproduce:
+//   ./repro.sh
+//
+// Workaround: use testForked (a Task.Command) instead of testCached (a Task).
+
+package build
+
+import mill.*, javalib.*
+
+trait MyModule extends JavaModule {
+  def build: T[Unit] = Task {
+    compile()
+    test.testCached
+    ()
+  }
+
+  object test extends JavaTests with TestModule.Junit5
+}
+
+object foo extends MyModule
+object bar extends MyModule
+object baz extends MyModule
